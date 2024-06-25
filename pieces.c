@@ -1,7 +1,5 @@
 #include "chess.h"
 #include <stdbool.h>
-#include <stdlib.h>
-#include <wchar.h>
 
 /*
  * Este archivo se deberia rescribir esta un poco hardcodeado
@@ -195,41 +193,31 @@ Board possible_movs_bishop(Board board, Position position)
 Board possible_movs_knight(Board board, Position position)
 {
     Board ret_board;
+    int pos;
     create_board(&ret_board);
     ret_board[position.i * 8 + position.j] = SELF;
-    if ((position.i - 2) * 8 + position.j + 1 >= 0 &&
-    (position.i - 2) * 8 + position.j + 1 < 64)
-        ret_board[(position.i - 2) * 8 + position.j + 1] =
-        (board[(position.i - 2) * 8 + position.j + 1] == 0) ? CAN_MOVE : CAN_CAPTURE;
-    if ((position.i - 2) * 8 + position.j - 1 >= 0 &&
-    (position.i - 2) * 8 + position.j - 1 < 64)
-        ret_board[(position.i - 2) * 8 + position.j - 1] =
-        (board[(position.i - 2) * 8 + position.j - 1] == 0) ? CAN_MOVE : CAN_CAPTURE;
-    if (((position.i - 1) * 8 + position.j + 2 >= 0) &&
-    ((position.i - 1) * 8 + position.j + 2) < 64)
-        ret_board[(position.i - 1) * 8 + position.j + 2] =
-        (board[(position.i - 1) * 8 + position.j + 2] == 0) ? CAN_MOVE : CAN_CAPTURE;
-    if (((position.i - 1) * 8 + position.j - 2 >= 0) &&
-    ((position.i - 1) * 8 + position.j - 2) < 64)
-        ret_board[(position.i - 1) * 8 + position.j - 2] =
-        (board[(position.i - 1) * 8 + position.j - 2] == 0) ? CAN_MOVE : CAN_CAPTURE;
-    if (((position.i + 2) * 8 + position.j + 1 >= 0) &&
-    ((position.i + 2) * 8 + position.j + 1) < 64)
-        ret_board[(position.i + 2) * 8 + position.j + 1] =
-        (board[(position.i + 2) * 8 + position.j + 1] == 0) ? CAN_MOVE : CAN_CAPTURE;
-    if (((position.i + 2) * 8 + position.j - 1 >= 0) &&
-    ((position.i + 2) * 8 + position.j - 1) < 64)
-        ret_board[(position.i + 2) * 8 + position.j - 1] =
-        (board[(position.i + 2) * 8 + position.j - 1] == 0) ? CAN_MOVE : CAN_CAPTURE;
-    if (((position.i + 1) * 8 + position.j + 2 >= 0) &&
-    ((position.i + 1) * 8 + position.j + 2) < 64)
-        ret_board[(position.i + 1) * 8 + position.j + 2] =
-        (board[(position.i + 1) * 8 + position.j + 2] == 0) ? CAN_MOVE : CAN_CAPTURE;
-    if (((position.i + 1) * 8 + position.j - 2 >= 0) &&
-    ((position.i + 1) * 8 + position.j - 2) < 64)
-        ret_board[(position.i + 1) * 8 + position.j - 2] =
-        (board[(position.i + 1) * 8 + position.j - 2] == 0) ? CAN_MOVE : CAN_CAPTURE;
 
+    for (int i = -2; i <= 2; i++)
+        for (int j = -2; j <= 2; j++)
+        {
+            if (i == j)
+                continue;
+            if (i == -j)
+                continue;
+            if (i == 0 || j == 0)
+                continue;
+            if (position.i + i < 0)
+                continue;
+            if (position.i + i > 7)
+                continue;
+            if (position.j + j < 0)
+                continue;
+            if (position.j + j > 7)
+                continue;
+
+            pos            = (position.i + i) * 8 + position.j + j;
+            ret_board[pos] = board[pos] == 0 ? CAN_MOVE : CAN_CAPTURE;
+        }
     return ret_board;
 }
 
@@ -312,7 +300,6 @@ void fix_self_capture(Board board, Board possible_movs_board, Position position)
                 possible_movs_board[i] = 0;
 }
 
-
 Board possible_movs(Board board, Position position)
 {
     Board possible_movs_board;
@@ -343,7 +330,6 @@ Board possible_movs(Board board, Position position)
     fix_self_capture(board, possible_movs_board, position);
     return possible_movs_board;
 }
-
 
 int can_move(Position from, Position to, Board board, enum Options options)
 {

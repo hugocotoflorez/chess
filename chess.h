@@ -14,12 +14,10 @@
 
 typedef int* Board;
 
-
 typedef struct
 {
     int i, j;
 } Position;
-
 
 typedef enum Piece
 {
@@ -58,9 +56,10 @@ Board reverse_board(Board board);
 Board possible_movs(Board board, Position position);
 void show_possible_movs(Board board, Position position, Position offset, enum Options options);
 int can_move(Position from, Position to, Board board, enum Options options);
-void board_move(Board board, Position from, Position to);
+int board_move(Board board, Position from, Position to);
 
-bool is_checkmate(Board board);
+int is_check(Board board, int turn);
+bool is_checkmate(Board board, int turn, enum Options options);
 
 bool color_match(Board board, Position position, int turn);
 

@@ -1,6 +1,6 @@
 #include "chess.h"
 #include <locale.h>
-#include <stdio.h> // stdout (si se necesita)
+#include <stdio.h>
 #include <wchar.h>
 
 typedef enum
@@ -14,7 +14,6 @@ typedef enum
     CYAN,
     WHITE
 } Color;
-
 
 // piece color
 #define PIECE_COLOR_WHITE WHITE
@@ -77,7 +76,6 @@ wchar_t piece_repr[] = {
     [ROOK]   = L'',
     [PAWN]   = L'',
 };
-
 
 void init_graphics()
 {
@@ -144,7 +142,6 @@ void print_board(Board board, Position offset, enum Options options)
         free_board(temp_board);
 }
 
-
 void show_possible_movs(Board board, Position position, Position offset, enum Options options)
 {
     Board temp_board = NULL; // just to reverse it easily
@@ -194,9 +191,7 @@ void show_possible_movs(Board board, Position position, Position offset, enum Op
                 case CAN_CAPTURE:
                     term_set_bg(RED);
                     break;
-                case SELF:
-                    term_set_bg(BLUE);
-                    break;
+                case SELF: // do nothing (default bg)
                 case CANT_MOVE:
                     term_set_bg(((i + j) % 2) ? BOARD_COLOR_BLACK : BOARD_COLOR_WHITE);
                     break;
