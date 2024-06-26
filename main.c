@@ -4,6 +4,7 @@
 #include <string.h>
 #include <wchar.h>
 
+
 bool should_show_possible_movs(char* s, Position* position1)
 {
     int temp;
@@ -19,8 +20,6 @@ bool should_show_possible_movs(char* s, Position* position1)
     if (temp < 1 || temp > 8)
         return false;
     position1->i = 8 - temp;
-
-    wprintf(L"Posi: (%d,%d)\n");
 
     return true;
 }
@@ -65,10 +64,11 @@ int main(void)
     Board board;
     Position position1, position2;
     char input_buffer[4 + 1];
-    Position offset = { 1, 1 };
-    int options     = NONE;
-    bool checkmate  = false;
-    enum TURN turn  = WHITE;
+    Position offset             = { 1, 1 };
+    int options                 = NONE;
+    bool checkmate              = false;
+    enum TURN turn              = WHITE;
+    enum Castle castle_status[] = { BOTH_CASTLE, BOTH_CASTLE };
 
     init_graphics();
     create_board(&board);
@@ -76,41 +76,29 @@ int main(void)
         DIE;
 
     init_board(board);
-    // ------- TEMP BOARD
-    //Position pos, pos2;
-    /*
-    transform_input("e2e4", &pos, &pos2);
-    board_move(board, pos, pos2);
-    transform_input("e7e5", &pos, &pos2);
-    board_move(board, pos, pos2);
-    transform_input("f1c4", &pos, &pos2);
-    board_move(board, pos, pos2);
-    transform_input("b8c6", &pos, &pos2);
-    board_move(board, pos, pos2);
-    transform_input("d1f3", &pos, &pos2);
-    board_move(board, pos, pos2);
-    transform_input("d7d6", &pos, &pos2);
-    board_move(board, pos, pos2);
-     */
-    // ------- TEMP BOARD
     print_board(board, offset, options);
 
     while (!checkmate) // main loop
     {
-        wprintf(L"Move (<from><to>) -> ");
+        wprintf(L"[%s] -> ", turn ? "Black" : "White");
         scanf("%4s", input_buffer);
         if (!transform_input(input_buffer, &position1, &position2))
         {
             if (should_show_possible_movs(input_buffer, &position1))
-                show_possible_movs(board, position1, offset, options);
+                show_possible_movs(board, position1, offset, options, castle_status[turn]);
 
             if (strlen(input_buffer) == 1 && input_buffer[0] == 'q')
-                DIE;
+            {
+                wprintf(L"Do you want to surrender? [y/n] ");
+                scanf("%2s", input_buffer);
+                if (strlen(input_buffer) == 1 && input_buffer[0] == 'y')
+                    DIE;
+            }
 
             continue;
         }
 
-        if (!can_move(position1, position2, board, options))
+        if (!can_move(position1, position2, board, options, castle_status[turn]))
         {
             wprintf(L"Cant move! Cant move to this position\n");
             continue;
@@ -122,22 +110,23 @@ int main(void)
             continue;
         }
 
-        board_move(board, position1, position2);
+        board_move(board, position1, position2, &castle_status[turn]);
+        check_castling(&castle_status[turn], board, position1, options);
 
-        if (is_check(board, turn))
+        if (is_check(board, turn, castle_status[turn]))
         {
-            if (is_checkmate(board, turn, options))
+            if (is_checkmate(board, turn, options, castle_status[turn]))
             {
                 checkmate = true;
-                //break; // REMOVE
+                // break; // REMOVE
             }
         }
 
         // is needed to move the piece before and return to its previous position if its check
-        if (is_check(board, turn == BLACK ? WHITE : BLACK))
+        if (is_check(board, turn == BLACK ? WHITE : BLACK, castle_status[turn]))
         {
             wprintf(L"Cant move! Its check\n");
-            board_move(board, position2, position1);
+            board_move(board, position2, position1, &castle_status[turn]);
             continue;
         }
 

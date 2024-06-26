@@ -22,6 +22,10 @@ typedef enum
 #define BOARD_COLOR_WHITE WHITE
 #define BOARD_COLOR_BLACK BLACK
 
+// THEME
+#define TRANSPARENT_THEME
+// #define REALISTIC_THEME
+
 void term_set_bg(Color c)
 {
     wprintf(L"\e[%dm", 100 + c);
@@ -68,6 +72,7 @@ void enable_wide_mode()
     fwide(stdout, 1);
 }
 
+#ifdef TRANSPARENT_THEME
 wchar_t piece_repr[] = {
     [KING]   = L'',
     [QUEEN]  = L'',
@@ -76,6 +81,26 @@ wchar_t piece_repr[] = {
     [ROOK]   = L'',
     [PAWN]   = L'',
 };
+#elifdef REALISTIC_THEME
+wchar_t piece_repr[] = {
+    [KING]   = L'',
+    [QUEEN]  = L'',
+    [BISHOP] = L'',
+    [KNIGHT] = L'',
+    [ROOK]   = L'',
+    [PAWN]   = L'',
+};
+#else
+wchar_t piece_repr[] = {
+    [KING]   = L'󰡗',
+    [QUEEN]  = L'󰡚',
+    [BISHOP] = L'󰡜',
+    [KNIGHT] = L'󰡘',
+    [ROOK]   = L'󰡛',
+    [PAWN]   = L'󰡙',
+};
+#endif /* ifdef TRANSPARENT_THEME */
+
 
 void init_graphics()
 {
@@ -142,7 +167,7 @@ void print_board(Board board, Position offset, enum Options options)
         free_board(temp_board);
 }
 
-void show_possible_movs(Board board, Position position, Position offset, enum Options options)
+void show_possible_movs(Board board, Position position, Position offset, enum Options options, enum Castle castle_status)
 {
     Board temp_board = NULL; // just to reverse it easily
     Board possible_movs_board;
@@ -158,7 +183,7 @@ void show_possible_movs(Board board, Position position, Position offset, enum Op
     {
         temp_board = board;
     }
-    possible_movs_board = possible_movs(temp_board, position);
+    possible_movs_board = possible_movs(temp_board, position, castle_status);
 
     if (possible_movs_board == NULL) // trying to show no-piece movs
     {

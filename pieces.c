@@ -1,12 +1,13 @@
 #include "chess.h"
 #include <stdbool.h>
+#include <wchar.h>
 
 /*
  * Este archivo se deberia rescribir esta un poco hardcodeado
  * (no lo voy a hacer, funciona)
  */
 
-Board possible_movs_king(Board board, Position position)
+Board possible_movs_king(Board board, Position position, enum Castle castle_status)
 {
     Board ret_board;
     create_board(&ret_board);
@@ -22,6 +23,52 @@ Board possible_movs_king(Board board, Position position)
             ret_board[(position.i + i) * 8 + position.j + j] =
             (board[(position.i + i) * 8 + position.j + j] == 0) ? CAN_MOVE : CAN_CAPTURE;
         }
+
+    if (castle_status & LEFT_CASTLE)
+    {
+        ret_board[56] = CAN_MOVE;
+        for (int k = 1; k < 4; k++)
+            if (board[56 + k] % 10 == KING)
+                break;
+            else if (board[56 + k] != 0)
+            {
+                ret_board[56] = CANT_MOVE;
+                break;
+            }
+        if (ret_board[56] == CAN_MOVE)
+            for (int k = 0; k < 3; k++)
+            {
+                if (is_square_attacked(board, board[position.i * 8 + position.j] / 10 ? 0 : 1,
+                    (Position){ position.i, position.j - k }))
+                {
+                    ret_board[56] = CANT_MOVE;
+                    break;
+                }
+            }
+    }
+    if (castle_status & RIGHT_CASTLE)
+    {
+        ret_board[63] = CAN_MOVE;
+        for (int k = 1; k < 4; k++)
+            if (board[63 - k] % 10 == KING)
+                break;
+            else if (board[63 - k] != 0)
+            {
+                ret_board[63] = CANT_MOVE;
+                break;
+            }
+        if (ret_board[63] == CAN_MOVE)
+            for (int k = 0; k < 3; k++)
+            {
+                if (is_square_attacked(board, board[position.i * 8 + position.j] / 10 ? 0 : 1,
+                    (Position){ position.i, position.j + k }))
+                {
+                    ret_board[63] = CANT_MOVE;
+                    break;
+                }
+            }
+    }
+
     return ret_board;
 }
 
@@ -300,7 +347,8 @@ void fix_self_capture(Board board, Board possible_movs_board, Position position)
                 possible_movs_board[i] = 0;
 }
 
-Board possible_movs(Board board, Position position)
+
+Board possible_movs(Board board, Position position, enum Castle castle_status)
 {
     Board possible_movs_board;
     switch (board[position.i * 8 + position.j] % 10)
@@ -310,7 +358,7 @@ Board possible_movs(Board board, Position position)
             break;
         case KING:
             // TODO: cant move to check possition
-            possible_movs_board = possible_movs_king(board, position);
+            possible_movs_board = possible_movs_king(board, position, castle_status);
             break;
         case QUEEN:
             possible_movs_board = possible_movs_queen(board, position);
@@ -331,7 +379,7 @@ Board possible_movs(Board board, Position position)
     return possible_movs_board;
 }
 
-int can_move(Position from, Position to, Board board, enum Options options)
+int can_move(Position from, Position to, Board board, enum Options options, enum Castle castle_status)
 {
     Board b;
     Position posi_from;
@@ -348,7 +396,7 @@ int can_move(Position from, Position to, Board board, enum Options options)
         posi_from = from;
         posi_to   = to;
     }
-    int p = possible_movs(b, posi_from)[posi_to.i * 8 + posi_to.j];
+    int p = possible_movs(b, posi_from, castle_status)[posi_to.i * 8 + posi_to.j];
     if (options & REVERSE_BOARD)
         free_board(b);
     return p;

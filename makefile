@@ -9,3 +9,7 @@ all:
 
 debug:
 	$(CC) $(FILES) -o $(EXEC_NAME) -g
+
+
+fast:
+	$(CC) $(FILES) -o $(EXEC_NAME) -O3

@@ -12,6 +12,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+
 typedef int* Board;
 
 typedef struct
@@ -28,6 +29,14 @@ typedef enum Piece
     ROOK,
     PAWN
 } Piece;
+
+enum Castle
+{
+    CANT_CASTLE,
+    RIGHT_CASTLE,
+    LEFT_CASTLE,
+    BOTH_CASTLE,
+};
 
 enum Options
 {
@@ -53,15 +62,22 @@ void free_board(Board board);
 
 Board reverse_board(Board board);
 
-Board possible_movs(Board board, Position position);
-void show_possible_movs(Board board, Position position, Position offset, enum Options options);
-int can_move(Position from, Position to, Board board, enum Options options);
-int board_move(Board board, Position from, Position to);
+Board possible_movs(Board board, Position position, enum Castle castle_status);
+void show_possible_movs(Board board,
+Position position,
+Position offset,
+enum Options options,
+enum Castle castle_status);
+int can_move(Position from, Position to, Board board, enum Options options, enum Castle castle_status);
+int board_move(Board board, Position from, Position to, enum Castle* castle_status);
 
-int is_check(Board board, int turn);
-bool is_checkmate(Board board, int turn, enum Options options);
+int is_check(Board board, int turn, enum Castle castle_status);
+bool is_checkmate(Board board, int turn, enum Options options, enum Castle castle_status);
+int is_square_attacked(Board board, int turn, Position square);
 
 bool color_match(Board board, Position position, int turn);
+
+void check_castling(enum Castle* castle_status, Board board, Position position1, enum Options options);
 
 #define DIE exit(1);
 
